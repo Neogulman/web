@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-report-auth">
+	<select id="cnt" resultType="int">
+		select 
+			count(distinct idx) as cnt
+		 from tb_report_auth
+		 where 1=1
+		 
+		 	<if test='user_id != ""'>
+		 		and user_id=#{user_id}
+		 	</if>
+
+			<if test='type != ""'>
+		 		and type=#{type}
+		 	</if>
+	
+	</select>
+
+	<select id="list" resultType="com.joheul.data.dto.TB_Report_Auth">
+		select 
+			user_id,
+			type,
+			idx
+		 from tb_report_auth
+		 where 1=1
+		 	<if test='type != ""'>
+		 		and type=#{type}
+		 	</if>
+		 	<if test='user_id != ""'>
+		 		and user_id=#{user_id}
+		 	</if>
+			group by idx order by idx desc
+	</select>
+	
+	<insert id="insert">
+		insert into tb_report_auth
+		(
+			user_id,
+			type,
+			idx
+		)values(
+			#{user_id},
+			#{type},
+			#{idx}
+		)
+	</insert>
+	<delete id="delete">
+		delete from tb_report_auth where idx=#{idx} and type=#{type}
+	</delete>	
+</mapper>

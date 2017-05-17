@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-user-entrust">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_user_entrust
+		 where 1=1		
+		 	<if test='user_id != ""'>
+		 		and user_id=#{user_id}
+		 	</if>	
+		 	 
+		 	<if test='user_id_entrust != ""'>
+		 		and user_id_entrust=#{user_id_entrust}
+		 	</if>	
+		 	
+		 	<if test='status != ""'>
+		 		and status=#{status}
+		 	</if>		 	
+	</select>
+
+	<select id="list" resultType="com.joheul.data.dto.TB_User_Entrust">
+		select 
+			u.idx,
+			u.day,
+			u.user_id,
+			(select user_name from tb_user_info where u.user_id=user_id) as user_name,
+			u.user_id_entrust,
+			(select user_name from tb_user_info where u.user_id_entrust=user_id) as user_name_entrust,
+			u.s_day,
+			u.e_day,
+			u.status
+		 from tb_user_entrust u
+		 where 1=1
+		 
+		 	<if test='user_id != ""'>
+		 		and u.user_id=#{user_id}
+		 	</if>	
+		 	
+		 	<if test='user_id_entrust != ""'>
+		 		and u.user_id_entrust=#{user_id_entrust}
+		 	</if>	
+		 	
+		 	<if test='status != ""'>
+		 		and u.status=#{status}
+		 	</if>
+		 	
+		 order by u.idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_user_entrust
+		(
+			day,
+			user_id,
+			user_id_entrust,
+			s_day,
+			e_day,
+			status
+		)values(
+			now(),
+			#{user_id},
+			#{user_id_entrust},
+			#{s_day},
+			#{e_day},
+			#{status}
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_user_entrust set
+			status='N'
+		where idx=#{idx}
+	</update>
+</mapper>

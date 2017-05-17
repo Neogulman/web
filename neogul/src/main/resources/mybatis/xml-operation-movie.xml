@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-operation-movie">
+	
+	<!-- v2.0 movie.log -->
+	<select id="movie-log-cnt" resultType="int">
+		select
+			count(*) as cnt
+		from tb_operation_movie m
+			left outer join tb_operation_info w on m.work_key=w.work_key
+			left outer join tb_user_info u on w.work_user_id=u.user_id
+		where 1=1
+		<if test='s_day != ""'>
+		 	and m.day BETWEEN CONCAT( #{s_day}, ' 00:00:00') AND CONCAT( #{e_day}, ' 23:59:59')
+		</if>
+		<if test='result !=""'>
+			and (select count(*) from tb_operation_log where event_day between m.s_day and m.e_day and result='0') >0
+		</if>
+		<if test='work_key > 0'>
+			and (select work_key from tb_operation_info where work_key=m.work_key) = #{work_key} 
+		</if>
+	</select>
+	
+	
+	
+	<select id="movie-log" resultType="com.joheul.data.dto.TB_Operation_Movie">
+		select
+			m.idx,
+			m.work_key,
+			(select work_name from tb_operation_info where work_key=m.work_key) as work_name,
+			(select user_name from tb_user_info where user_id=(select work_user_id from tb_operation_info where work_key=m.work_key)) as user_name, 
+			(select pc_ip from tb_device_info where agent_id=(select agent_id from tb_operation_info where work_key=m.work_key)) as pc_ip,
+			(select count(*) from tb_operation_log where event_day between m.s_day and m.e_day and result='0') as result,
+			m.day,
+			m.s_day,
+			m.e_day,
+			m.file as movie_file
+		from tb_operation_movie m
+			left outer join tb_operation_info w on m.work_key=w.work_key
+			left outer join tb_user_info u on w.work_user_id=u.user_id
+		where 1=1
+		<if test='s_day != ""'>
+		 	and m.day BETWEEN CONCAT( #{s_day}, ' 00:00:00') AND CONCAT( #{e_day}, ' 23:59:59')
+		</if>
+		<if test='result !=""'>
+			and (select count(*) from tb_operation_log where event_day between m.s_day and m.e_day and result='0') >0
+		</if>
+		<if test='work_key > 0'>
+			and (select work_key from tb_operation_info where work_key=m.work_key) = #{work_key}
+		</if>
+		order by s_day desc
+		limit #{sRow}, #{eRow}
+		
+	</select>
+</mapper>

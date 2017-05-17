@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-user-info">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_user_info u
+		 where 1=1
+		 	and u.user_level in(1,2,8,9)
+		 	and u.user_id not in('anony','install')
+		 	<if test='user_id != ""'>
+		 		and u.user_id=#{user_id}
+		 	</if>
+		 	
+		 	<if test='user_name != ""'>
+		 		and (u.user_name like CONCAT('%', #{user_name}, '%') or u.user_id like CONCAT('%', #{user_name}, '%'))
+		 	</if>
+		 	
+		 	<if test='user_pwd != ""'>
+		 		and u.user_pwd=#{user_pwd}
+		 	</if>
+		 	
+		 	<if test='user_dept > 0'>
+		 		and u.user_dept=#{user_dept}
+		 	</if>
+		 	
+		 	<if test='user_level != ""'>
+		 		and u.user_level=#{user_level}
+		 	</if>
+		 	<if test='status_grp != ""'>
+		 		and u.status in (${status_grp})
+		 	</if>
+		 	<if test='status != ""'>
+		 		and u.status=#{status}
+		 	</if>
+		 	<if test='status2 != ""'>
+		 		or u.status=#{status2}
+		 	</if>
+		 	
+		 	<if test='manager_dept > 0'>
+		 		and u.manager_dept=#{manager_dept}
+		 	</if>
+	</select>
+
+	<select id="list" resultType="com.joheul.data.dto.TB_User_Info">
+		select 
+			u.user_id,
+			u.user_pwd,
+			u.user_name,
+			u.user_company,
+			u.user_dept,
+			(select name from tb_code_info where type='D' and u.user_dept=idx) as user_dept_name,
+			u.user_clss,
+			(select name from tb_code_info where type='C' and u.user_clss=idx) as user_clss_name,
+			u.user_level,
+			case 
+				when u.user_level = 9 then '시스템관리자'
+				when u.user_level = 1 then '관리책임자'
+				when u.user_level = 2 then '관리담당자'
+				when u.user_level = 3 then '작업자'
+			end as user_level_name,
+			u.user_email,
+			u.user_tel,
+			u.manager_dept,			
+			(select work_key from tb_operation_info where u.user_id=work_user_id and agent_id=#{agent_id} and now() BETWEEN s_day AND e_day AND status NOT IN('B','I') AND payment_status='Y' limit 0,1) as work_key,
+			u.login_cnt,
+			u.login_day,
+			TIMESTAMPDIFF(MINUTE, u.login_day, now()) as login_trm,
+			u.login_fail_cnt,
+			u.status,
+			u.rdate,
+			u.mdate
+		 from tb_user_info u
+		 where 1=1
+		 	and u.user_level in(1,2,8,9)
+		 	and u.user_id not in('anony','install')
+		 	<if test='user_id != ""'>
+		 		and u.user_id=#{user_id}
+		 	</if>
+		 	
+		 	<if test='user_name != ""'>
+		 		and (u.user_name like CONCAT('%', #{user_name}, '%') or u.user_id like CONCAT('%', #{user_name}, '%'))
+		 	</if>
+		 	
+		 	<if test='user_pwd != ""'>
+		 		and u.user_pwd=#{user_pwd}
+		 	</if>
+		 	
+		 	<if test='user_dept > 0'>
+		 		and u.user_dept=#{user_dept}
+		 	</if>
+		 	
+		 	<if test='user_level != ""'>
+		 		and u.user_level=#{user_level}
+		 	</if>
+		 	<if test='status_grp != ""'>
+		 		and u.status in (${status_grp})
+		 	</if>
+		 	<if test='status != ""'>
+		 		and u.status=#{status}
+		 	</if>
+		 	<if test='status2 != ""'>
+		 		or u.status=#{status2}
+		 	</if>
+		 	
+		 	<if test='manager_dept > 0'>
+		 		and u.manager_dept=#{manager_dept}
+		 	</if>
+		 	
+		 order by u.user_dept asc
+		 <!-- limit #{sRow}, #{eRow}-->
+	</select>
+	
+	<select id="manager-list" resultType="com.joheul.data.dto.TB_User_Info">
+		select 
+			u.user_id,
+			u.user_pwd,
+			u.user_name,
+			u.user_company,
+			u.user_dept,
+			(select name from tb_code_info where type='D' and u.user_dept=idx) as user_dept_name,
+			u.user_clss,
+			(select name from tb_code_info where type='C' and u.user_clss=idx) as user_clss_name,
+			u.user_level,
+			case 
+				when u.user_level = 9 then '시스템관리자'
+				when u.user_level = 1 then '관리책임자'
+				when u.user_level = 2 then '관리담당자'
+				when u.user_level = 3 then '작업자'
+			end as user_level_name,
+			u.user_email,
+			u.user_tel,
+			u.manager_dept,			
+			(select work_key from tb_operation_info where u.user_id=work_user_id and agent_id=#{agent_id} and now() BETWEEN s_day AND e_day AND status NOT IN('B','I') AND payment_status='Y' limit 0,1) as work_key,
+			u.login_cnt,
+			u.login_day,
+			TIMESTAMPDIFF(MINUTE, u.login_day, now()) as login_trm,
+			u.login_fail_cnt,
+			u.status,
+			u.rdate,
+			u.mdate
+		 from tb_user_info u
+		 where 1=1
+		 and u.user_level in (1,9) and user_id not in ('anony','install')
+		 	<if test='status != ""'>
+		 		and u.status=#{status}
+		 	</if>
+
+	 	
+		 order by u.user_dept asc,u.user_level desc
+		 limit #{sRow}, #{eRow}
+		 
+	</select>
+	
+	
+	<select id="alllist" resultType="com.joheul.data.dto.TB_User_Info">
+		select 
+			user_id,
+			user_pwd,
+			user_name,
+			user_company,
+			user_dept,
+			(select name from tb_code_info where type='D' and user_dept=idx) as user_dept_name,
+			user_clss,
+			(select name from tb_code_info where type='C' and user_clss=idx) as user_clss_name,
+			user_level,
+			case 
+				when user_level = 9 then '시스템관리자'
+				when user_level = 1 then '관리책임자'
+				when user_level = 2 then '관리담당자'
+				when user_level = 3 then '작업자'
+			end as user_level_name,
+			user_email,
+			user_tel,
+			manager_dept,			
+			(select work_key from tb_operation_info where user_id=work_user_id and agent_id=#{agent_id} and now() BETWEEN s_day AND e_day AND status NOT IN('B','I') AND payment_status='Y' limit 0,1) as work_key,
+			login_cnt,
+			login_day,
+			TIMESTAMPDIFF(MINUTE, login_day, now()) as login_trm,
+			login_fail_cnt,
+			status,
+			rdate,
+			mdate
+		 from tb_user_info
+		 where 1=1
+		 and u.user_id not in('anony','install')
+		
+	</select>
+	
+	<select id="work-cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_user_info u
+		 where 1=1
+		 	and u.user_level=3
+		 	and u.user_id not in('anony','install')
+		 	<if test='user_id != ""'>
+		 		and u.user_id=#{user_id}
+		 	</if>
+		 	
+		 	<if test='user_name != ""'>
+		 		and (u.user_name like CONCAT('%', #{user_name}, '%') or u.user_id like CONCAT('%', #{user_name}, '%'))
+		 	</if>
+
+		 	<if test='user_pwd != ""'>
+		 		and u.user_pwd=#{user_pwd}
+		 	</if>
+		 	
+		 	<if test='status != ""'>
+		 		and u.status=#{status}
+		 	</if>
+		 	<if test='status2 != ""'>
+		 		or u.status=#{status2}
+		 	</if>
+		 	<if test='status_grp != ""'>
+		 		and u.status in (${status_grp})
+		 	</if>
+		 	<if test='manager_dept > 0'>
+		 		and u.manager_dept=#{manager_dept}
+		 	</if>
+	</select>
+	
+	<select id="work" resultType="com.joheul.data.dto.TB_User_Info">
+		select 
+			u.user_id,
+			u.user_pwd,
+			u.user_name,
+			u.user_company,
+			u.user_level,
+			case 
+				when u.user_level = 9 then '시스템관리자'
+				when u.user_level = 1 then '관리책임자'
+				when u.user_level = 2 then '관리담당자'
+				when u.user_level = 3 then '작업자'
+			end as user_level_name,
+			u.user_email,
+			u.user_tel,
+			u.manager_dept,
+			(select work_key from tb_operation_info where u.user_id=work_user_id and agent_id=#{agent_id} and now() BETWEEN s_day AND e_day AND status NOT IN('B','I') AND payment_status='Y' limit 0,1) as work_key,
+			(select name from tb_code_info where type='D' and u.manager_dept=idx) as manager_dept_name,
+			u.login_cnt,
+			u.login_day,
+			u.login_fail_cnt,
+			u.status,
+			u.rdate,
+			u.mdate
+		 from tb_user_info u
+		 where 1=1
+		 	and u.user_level=3
+		 	and u.user_id not in('anony','install')
+		 	<if test='user_id != ""'>
+		 		and u.user_id=#{user_id}
+		 	</if>
+		 	
+		 	<if test='user_name != ""'>
+		 		and (u.user_name like CONCAT('%', #{user_name}, '%') or u.user_id like CONCAT('%', #{user_name}, '%'))
+		 	</if>
+
+		 	<if test='user_pwd != ""'>
+		 		and u.user_pwd=#{user_pwd}
+		 	</if>
+		 	
+		 	<if test='status != ""'>
+		 		and u.status=#{status}
+		 	</if>
+		 	<if test='status2 != ""'>
+		 		or u.status=#{status2}
+		 	</if>
+		 	<if test='status_grp != ""'>
+		 		and u.status in (${status_grp})
+		 	</if>
+		 	<if test='manager_dept > 0'>
+		 		and u.manager_dept=#{manager_dept}
+		 	</if>
+		 	
+		 order by u.user_name asc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_user_info
+		(
+			user_id,
+			user_pwd,
+			user_name,
+			user_company,
+			user_dept,
+			user_clss,
+			user_level,
+			user_email,
+			user_tel,
+			manager_dept,
+			status,
+			rdate,
+			mdate
+		)values(
+			#{user_id},
+			#{user_pwd},
+			#{user_name},
+			#{user_company},
+			#{user_dept},
+			#{user_clss},
+			#{user_level},
+			#{user_email},
+			#{user_tel},
+			#{manager_dept},
+			'Y',
+			now(),
+			now()
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_user_info set
+			user_pwd=#{user_pwd},
+			user_name=#{user_name},
+			user_company=#{user_company},
+			user_dept=#{user_dept},
+			user_clss=#{user_clss},
+			user_level=#{user_level},
+			user_email=#{user_email},
+			user_tel=#{user_tel},
+			manager_dept=#{manager_dept},
+			mdate=now()
+		where user_id=#{user_id}
+	</update>
+	
+	<delete id="delete">
+		update tb_user_info set status=#{status} where user_id=#{user_id}
+	</delete>	
+
+	<delete id="remove">
+		delete from tb_user_info where user_id=#{user_id}
+	</delete>
+
+	<update id="pwd">
+		update tb_user_info set user_pwd=#{user_pwd}
+		<if test='login_fail_cnt == 0'>
+		 		, login_fail_cnt=#{login_fail_cnt}
+		</if>
+		<if test='status != ""'>
+		 		, status=#{status}
+		</if>
+		where user_id=#{user_id}
+	</update>	
+
+	<update id="work-pwd">
+		update tb_user_info set user_pwd=#{user_pwd} where user_id=#{user_id} and user_level=3
+	</update>	
+	
+	<update id="login-cnt">
+		update tb_user_info set login_cnt=#{login_cnt}, login_day=now() where user_id=#{user_id}
+	</update>
+	
+	<update id="login-fail-cnt">
+		update tb_user_info set login_fail_cnt=#{login_fail_cnt}, login_day=now() where user_id=#{user_id}
+	</update>	
+
+	<update id="status">
+		update tb_user_info set status=#{status}, mdate=now() 
+		<if test='login_fail_cnt == 0'>
+		 	,login_fail_cnt=#{login_fail_cnt}
+		</if> where user_id=#{user_id}
+	</update>
+	
+	<update id="level">
+		update tb_user_info set user_level=#{user_level} where user_id=#{user_id_entrust}
+	</update>
+	
+	<select id="user-pw" resultType="com.joheul.data.dto.TB_User_Info">
+		select * from tb_user_info where user_id=#{user_id} limit 1
+	</select>
+</mapper>

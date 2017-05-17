@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-user-login-log">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_user_login_log l
+		 where 1=1
+		 	<if test='user_id != ""'>
+		 		and l.user_id=#{user_id}
+		 	</if>
+		 	
+		 	<if test='s_day != ""'>
+		 		and l.day BETWEEN '${s_day} 00:00:00' AND '${e_day} 23:59:59'
+		 	</if>
+	</select>
+
+	<select id="list" resultType="com.joheul.data.dto.TB_User_Login_Log">
+		select 
+			l.idx,
+			DATE_FORMAT(l.day, '%Y/%m/%d %H:%i:%S') as day,
+			l.user_id,
+			(select user_name from tb_user_info where l.user_id=user_id) as user_name,
+			l.remote_ip,
+			l.result
+		 from tb_user_login_log l
+		 where 1=1
+		 	
+		 	<if test='user_id != ""'>
+		 		and l.user_id like '%${user_id}%'
+		 	</if>
+		 	
+		 	<if test='s_day != ""'>
+		 		and l.day BETWEEN '${s_day} 00:00:00' AND '${e_day} 23:59:59'
+		 	</if>
+		 	
+		 order by l.day desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_user_login_log
+		(
+			day,
+			user_id,
+			remote_ip,
+			result
+		)values(
+			now(),
+			#{user_id},
+			#{remote_ip},
+			#{result}
+		)
+	</insert>
+</mapper>

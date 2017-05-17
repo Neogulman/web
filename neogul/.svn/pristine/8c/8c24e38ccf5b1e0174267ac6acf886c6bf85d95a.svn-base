@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-mail-config">
+
+	<select id="view" resultType="com.joheul.data.dto.TB_MailConfig">
+		select 
+			type,
+			host,
+			port,
+			auth_id,
+			auth_pwd
+		 from tb_mail_config
+	</select>
+	
+	<update id="update">
+		update tb_mail_config set
+			type=#{type},
+			host=#{host},
+			port=#{port},
+			auth_id=#{auth_id},
+			auth_pwd=#{auth_pwd}
+	</update>
+</mapper>

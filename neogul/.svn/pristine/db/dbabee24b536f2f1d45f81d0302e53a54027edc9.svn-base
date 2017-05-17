@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-report-information">
+	<select id="mrg-no" resultType="int">
+		select 
+			IFNULL((max(substr(mrg_no, -4))+1), 1) as mrg_no
+		from tb_report_information where substr(mrg_no, 1, 4)=substr(now(), 1, 4)
+	</select>
+
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_report_information
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='type != ""'>
+		 		and type=#{type}
+		 	</if>
+		 	
+		 	<if test='s_day != ""'>
+		 		and (reg_day BETWEEN '${s_day}' and '${e_day} 23:59:59' or rem_day BETWEEN '${s_day} 00:00:00' and '${e_day} 23:59:59')
+		 	</if>
+		 	
+	</select>
+
+	<select id="list" resultType="com.joheul.data.dto.TB_Report_Information">
+		select 
+			idx,
+			mrg_no,
+			type,
+			case 
+				when type = "P" then 'PC'
+				when type = "S" then '서버'
+				when type = "N" then '노트북'
+				when type = "O" then '기타'
+			end as type_name,
+			user,
+			host_ip,
+			security,
+			reg_day,
+			rem_day
+		 from tb_report_information
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='type != ""'>
+		 		and type=#{type}
+		 	</if>
+		 	
+		 	<if test='s_day != ""'>
+		 	<!-- 2016.11.24 bhahn2013 removed
+		 		and (reg_day BETWEEN '${s_day}' and '${e_day} 23:59:59' or rem_day BETWEEN '${s_day} 00:00:00' and '${e_day} 23:59:59')
+		 		2016.11.24 bhahn2013 modified
+	 		 -->
+	 		 <![CDATA[
+		 		and (reg_day <= '${e_day} 23:59:59' and rem_day >= '${s_day} 00:00:00'  )
+		 		]]>
+		 	</if>
+		 	
+		 order by mrg_no desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_report_information
+		(
+			mrg_no,
+			type,
+			user,
+			host_ip,
+			security,
+			reg_day,
+			rem_day
+		)values(
+			#{mrg_no},
+			#{type},
+			#{user},
+			#{host_ip},
+			#{security},
+			#{reg_day},
+			#{rem_day}
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_report_information set
+			type=#{type},
+			user=#{user},
+			host_ip=#{host_ip},
+			security=#{security},
+			reg_day=#{reg_day},
+			rem_day=#{rem_day}
+		where idx=#{idx}
+	</update>
+
+	<delete id="delete">
+		delete from tb_report_information where idx=#{idx}
+	</delete>	
+</mapper>

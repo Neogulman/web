@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-policy-item">
+	<select id="check" resultType="com.joheul.data.dto.TB_Policy_Item">
+		select
+			item_no,
+			item_name,
+			item_command
+		from tb_policy_item
+		where 1=1		 	
+		 	<if test='item_no > 0'>
+		 		and item_no=#{item_no}
+		 	</if>
+		 	<if test='gubun != ""'>
+		 		and gubun=#{gubun}
+		 	</if>
+		 	
+		 	<if test='item_name != ""'>
+		 		and item_name=#{item_name}
+		 	</if>
+		 	
+		 	<if test='item_command != ""'>
+		 		and item_command=#{item_command}
+		 	</if>
+	</select>
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_policy_item
+		 where 1=1
+		 
+		 	<if test='item_no > 0'>
+		 		and item_no=#{item_no}
+		 	</if>
+		 	
+		 	<if test='gubun != ""'>
+		 		and gubun=#{gubun}
+		 	</if>
+		 	
+		 	<if test='item_name != ""'>
+		 		and item_name like '%${item_name}%'
+		 	</if>
+		 	
+		 	<if test='item_command != ""'>
+		 		and item_command like '%${item_command}%'
+		 	</if>
+	</select>
+	
+	<select id="list" resultType="com.joheul.data.dto.TB_Policy_Item">
+		select 
+			item_no,
+			gubun,
+			case 
+				when gubun = "S" then 'IP'
+				when gubun = "P" then '프로그램'
+				when gubun = "C" then '명령어'
+				when gubun = "DS" then '기본 IP'
+				when gubun = "DP" then '기본 프로그램'
+				when gubun = "DC" then '기본 명령어'
+			end as gubun_name,
+			item_name,
+			item_command,
+			url_yn,
+			DATE_FORMAT(rdate, '%Y/%m/%d') as rdate,
+			DATE_FORMAT(mdate, '%Y/%m/%d') as mdate
+		 from tb_policy_item
+		 where 1=1
+		 
+		 	<if test='item_no > 0'>
+		 		and item_no=#{item_no}
+		 	</if>
+		 	
+		 	<if test='gubun != ""'>
+		 		and gubun=#{gubun}
+		 	</if>
+		 	
+		 	<if test='item_name != ""'>
+		 		and item_name like '%${item_name}%'
+		 	</if>
+		 	
+		 	<if test='item_command != ""'>
+		 		and item_command like '%${item_command}%'
+		 	</if>
+
+		 order by item_no asc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<select id="pop" resultType="com.joheul.data.dto.TB_Policy_Item">
+		select 
+			it.item_no,
+			it.gubun,
+			case 
+				when it.gubun = "S" then 'IP'
+				when it.gubun = "P" then '프로그램'
+				when it.gubun = "C" then '명령어'
+			end as gubun_name,
+			it.item_name,
+			it.item_command,
+			it.url_yn,
+			DATE_FORMAT(it.rdate, '%Y/%m/%d') as rdate,
+			DATE_FORMAT(it.mdate, '%Y/%m/%d') as mdate
+		 from tb_policy_group_item gi, tb_policy_item it
+		 where 1=1
+		 	and gi.item_no=it.item_no
+		 	and it.gubun=#{gubun}
+		 	and gi.grp_key in(${grp_key_str})
+		 	group by it.item_no
+		 order by it.item_name asc
+	</select>
+	
+	<insert id="insert">
+		insert into tb_policy_item
+		(
+			gubun,
+			item_name,
+			item_command,
+			url_yn,
+			rdate,
+			mdate
+		)values(
+			#{gubun},
+			#{item_name},
+			#{item_command},
+			#{url_yn},
+			now(),
+			now()
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_policy_item set
+			item_name=#{item_name},
+			url_yn=#{url_yn},
+			item_command=#{item_command},
+			mdate=now()
+		where item_no=#{item_no}
+	</update>
+
+	<delete id="delete">
+		delete from tb_policy_item where item_no=#{item_no}
+	</delete>	
+	
+	<delete id="delete-name">
+		delete from tb_policy_item where item_name=#{item_name}
+	</delete>	
+</mapper>

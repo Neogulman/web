@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-pwd-modify-history">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_pwd_modify_history
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='user_id != ""'>
+		 		and user_id=#{user_id}
+		 	</if>
+		 	<if test='muser_id != ""'>
+		 		and muser_id=#{muser_id}
+		 	</if>
+	</select>
+	
+	
+	<select id="list" resultType="com.joheul.data.dto.TB_Pwd_Modify_History">
+		select 
+			m.idx,
+			m.user_id,
+			(select user_name from tb_user_info where user_id=#{user_id}) as user_name,
+			m.muser_id,
+			(select user_name from tb_user_info where user_id=#{user_id}) as muser_name,
+			m.m_day
+		 from 
+		 	tb_pwd_modify_history m
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='user_id != ""'>
+		 		and user_id=#{user_id}
+		 	</if>
+		 	<if test='muser_id != ""'>
+		 		and muser_id=#{muser_id}
+		 	</if>
+		 	
+		 order by m.idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_pwd_modify_history
+		(
+			user_id,
+			muser_id,
+			m_day
+		)values(
+			#{user_id},
+			#{muser_id},
+			now()
+		)
+	</insert>
+	
+	<select id="latest" resultType="com.joheul.data.dto.TB_Pwd_Modify_History">
+		select 
+			m.idx,
+			m.user_id,
+			(select user_name from tb_user_info where user_id=#{user_id}) as user_name,
+			m.muser_id,
+			(select user_name from tb_user_info where user_id=#{user_id}) as muser_name,
+			m.m_day
+		 from 
+		 	tb_pwd_modify_history m
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='user_id != ""'>
+		 		and user_id=#{user_id}
+		 	</if>
+		 	<if test='muser_id != ""'>
+		 		and muser_id=#{muser_id}
+		 	</if>
+		 	
+		 order by m.idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+
+	<delete id="delete">
+		delete from tb_pwd_modify_history where idx=#{idx}
+	</delete>	
+</mapper>

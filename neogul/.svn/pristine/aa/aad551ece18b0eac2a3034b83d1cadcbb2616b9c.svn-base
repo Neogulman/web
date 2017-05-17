@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-project-list">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_project_list
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='project_name != ""'>
+		 		and project_name like '%${project_name}%'
+		 	</if>
+	</select>
+
+	<select id="list" resultType="com.joheul.data.dto.TB_Project_List">
+		select 
+			idx,
+			project_name,
+			project_address
+		 from 
+		 	tb_project_list
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='project_name != ""'>
+		 		and project_name like '%${project_name}%'
+		 	</if>
+		 	
+		 order by idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_code_info
+		(
+			project_name,
+			project_address
+		)values(
+			#{project_name},
+			#{project_address}
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_project_list set
+			project_name=#{project_name},
+			project_address=#{project_address},
+		where idx=#{idx}
+	</update>
+
+	<delete id="delete">
+		delete from tb_project_list where idx=#{idx}
+	</delete>	
+</mapper>

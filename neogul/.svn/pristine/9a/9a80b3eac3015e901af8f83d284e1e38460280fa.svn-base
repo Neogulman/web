@@ -1,0 +1,16 @@
+package com.joheul.ui.view.agent;
+
+import com.vaadin.data.Container;
+import com.vaadin.data.Item;
+
+/**
+ * Interface for ProductContainer.
+ *
+ * @author Vaadin Ltd
+ */
+public interface AgentContainer extends Container.Indexed, Container.Filterable {
+
+	//Item addItem(Object id);
+	//boolean insertItem(Object id);
+    boolean removeItem(Object id);
+}

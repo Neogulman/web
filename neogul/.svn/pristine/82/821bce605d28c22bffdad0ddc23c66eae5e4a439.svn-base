@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-manager-ip">
+	
+	<select id="list" resultType="com.joheul.data.dto.TB_Manager_Ip">
+		select 
+			cip,
+			DATE_FORMAT(day, '%Y-%m-%d %H:%i') as day,
+			DATE_FORMAT(login_day, '%Y-%m-%d %H:%i') as login_day
+		 from tb_manager_ip
+		 where 1=1
+		 
+		 	<if test='cip != ""'>
+		 		and cip=#{cip}
+		 	</if>
+		 order by day asc
+	</select>
+	
+	<insert id="insert">
+		insert into tb_manager_ip
+		(
+			cip,
+			day
+		)values(
+			#{cip},
+			now()
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_manager_ip set
+			login_day=now()
+		where cip=#{cip}
+	</update>
+	
+	<delete id="delete">
+		delete from tb_manager_ip where cip=#{cip}
+	</delete>
+</mapper>
