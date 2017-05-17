@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-product">
+	<select id="findAll" resultType="com.neogul.data.dto.Product">
+		select *   
+		from Product AS p
+		inner join Category AS c ON ( p.id = c.id )
+	</select>
+	
+	
+	<select id="getAllCategories" resultType="com.neogul.data.dto.Category">
+		select *
+		from Category
+	</select>
+	
+	<select id="getProduct" resultType="com.neogul.data.dto.Product">
+		select *
+		from Product
+		where 
+			id = #{id}
+	</select>
+	
+	
+	<delete id="deleteProduct">
+		delete from Product where id=#{id}
+	</delete>	
+</mapper>

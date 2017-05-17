@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-device-info">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_device_info
+		 where 1=1
+		 	
+		 	<if test='status != ""'>
+		 		and status in (${status})
+		 	</if>
+	</select>
+	
+	<select id="selectOne" resultType="com.neogul.data.dto.TB_Device_Info">
+		select agent_id, pc_mac, pc_ip, user_id, status 
+		from tb_device_info
+		where agent_id=#{agent_id}
+		limit 1
+	</select>
+
+	<select id="list" resultType="com.neogul.data.dto.TB_Device_Info">
+		select 
+			agent_id,
+			nickname,
+			pc_mac,
+			pc_ip,
+			DATE_FORMAT(install_day, '%Y/%m/%d %H:%i:%S') as install_day,
+			DATE_FORMAT(connect_day, '%Y/%m/%d %H:%i:%S') as connect_day,
+			user_id,
+			status
+		 from tb_device_info
+		 where 1=1
+		 	
+		 	<if test='status != ""'>
+		 		and status in (${status})
+		 	</if>
+		 	
+		 order by connect_day desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<select id="monitor" resultType="com.neogul.data.dto.TB_Device_Info">
+	
+		select 
+			d.agent_id,
+			w.work_key,
+			w.work_name,
+			u.user_name as work_user_name,
+			icnt,
+			pcnt,
+			ccnt,
+			mcnt,
+			d.nickname,
+			d.pc_mac,
+			d.pc_ip,
+			DATE_FORMAT(d.install_day, '%Y/%m/%d %H:%i:%S') as install_day,
+			DATE_FORMAT(d.connect_day, '%Y/%m/%d %H:%i:%S') as connect_day,
+			d.user_id,
+			d.status
+		 from tb_device_info d
+			 left outer join tb_operation_info w on d.agent_id=w.agent_id and w.status='S'
+			 left outer join tb_user_info u on w.work_user_id=u.user_id
+			 left outer join (select 
+		 						work_key,
+								max(case T.type when '2' then T.count end) icnt,
+								max(case T.type when '3' then T.count end) pcnt,
+								max(case T.type when '5' then T.count end) mcnt,
+								max(case T.type when '6' then T.count end) ccnt
+								from(
+									select work_key, type, count(*) as count
+									from tb_operation_log  <if test="part != null"> partition(#{part})</if>
+									where 
+									<![CDATA[
+										day < now() and day > DATE_ADD( now() , interval - 5 MINUTE)
+										and result = '0'
+									]]>	
+									group by type
+									) T
+								) L on  w.work_key= L.work_key
+			where 1=1
+		 	and d.status in('Y', 'S')
+		 	
+		 	<if test='contract_idx_str != ""'>
+		 		and w.contract_idx in(${contract_idx_str})
+		 	</if>		 	
+		 order by d.status asc
+
+	</select>
+	
+	<update id="updateStatus">
+		update tb_device_info set
+			<if test='nickname != ""'> nickname=#{nickname}, </if>
+			status=#{status}
+		where agent_id=#{agent_id}
+	</update>
+	
+	<update id="update">
+		update tb_device_info set
+			user_id=#{user_id},
+			pc_mac=#{pc_mac},
+			pc_ip=#{pc_ip},
+			connect_day=now(), 
+			status=#{status}
+		where agent_id=#{agent_id}
+	</update>
+	
+	<update id="updateStatusAll">
+		update tb_device_info set status='Y' where status='S'
+	</update>
+	
+	<insert id="insert">
+		insert into tb_device_info
+		(
+			user_id,
+			pc_mac,
+			pc_ip,
+			nickname,
+			install_day,
+			connect_day,
+			status,
+			agent_id
+		)
+		values 
+		(
+			#{user_id},
+			#{pc_mac},
+			#{pc_ip},
+			#{pc_ip},
+			now(),
+			now(), 
+			#{status},
+		    #{agent_id}
+		 )
+	</insert>
+
+	<delete id="delete">
+		delete from tb_device_info where agent_id=#{agent_id}
+	</delete>
+	
+	<select id="monitor2" resultType="com.neogul.data.dto.TB_Device_Info">
+
+		select 
+			w.work_key, 
+			sum(case when T.type ='2' or T.type ='3' or T.type ='5' or T.type ='6' then 1 else 0 end) ccnt,
+			w.work_name,
+			w.status,
+			w.s_day,
+			w.e_day,
+			u.user_id,
+			u.user_name as work_user_name,
+			d.agent_id,
+			d.nickname,
+			d.pc_mac,
+			d.pc_ip,
+			DATE_FORMAT(d.install_day, '%Y/%m/%d %H:%i:%S') as install_day,
+			DATE_FORMAT(d.connect_day, '%Y/%m/%d %H:%i:%S') as connect_day,
+			d.status
+		from tb_operation_info w left join tb_operation_log <if test="partition != null"> partition(${partition})</if> T on T.work_key = w.work_key and result = '0' and <![CDATA[ T.day <= now() and T.day > DATE_SUB( now() , interval 5 MINUTE) ]]> ,
+				tb_device_info d, tb_user_info u  
+		where d.agent_id=w.agent_id and u.user_id = w.work_user_id and  <![CDATA[ s_day <= now() and e_day >= now()  ]]> and not (w.payment_status='B')
+		group by w.work_key 
+		order by field (d.status, 'S','O','B','Y')
+		
+		
+	</select>	
+</mapper>

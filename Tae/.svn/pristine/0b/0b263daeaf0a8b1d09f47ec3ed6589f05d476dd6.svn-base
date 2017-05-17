@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-result-report">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_result_report
+		 where 1=1
+		 <if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+	
+		 <if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 </if>	
+	</select>
+	<select id="max" resultType="int">
+		select 
+			max(idx)
+		 from tb_result_report
+		 where 1=1
+	</select>
+	<select id="list" resultType="com.neogul.data.dto.TB_Result_Report">
+		select 
+			idx,
+			plan_idx,
+			(select plan_type from tb_work_plan where idx=plan_idx) as plan_type,
+			report_writer,
+			report_name,
+			write_day,
+			s_day,
+			e_day,
+			req_dept,
+			per_dept,
+			supervisor_id,
+			worker_id,
+			supervisor_name,
+			worker_name,
+			report_contents,
+			report_note,
+			report_name,
+			app_turn,
+			app_id,
+			app_name,
+			app_total,
+			app_status,
+			app_time
+		 from tb_result_report
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+			<if test='plan_type > 0'>
+				and (select plan_type from tb_work_plan where idx=plan_idx)=#{plan_type}
+		 	</if>
+		 	
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>	
+		 order by idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_result_report
+		(
+			plan_idx,
+			report_writer,
+			report_name,
+			write_day,
+			s_day,
+			e_day,
+			req_dept,
+			per_dept,
+			supervisor_id,
+			worker_id,
+			supervisor_name,
+			worker_name,
+			report_contents,
+			report_note,
+			app_turn,
+			app_id,
+			app_name,
+			app_total,
+			app_status
+
+		)values(
+			#{plan_idx},
+			#{report_writer},
+			#{report_name},
+			now(),
+			#{s_day},
+			#{e_day},
+			#{req_dept},
+			#{per_dept},
+			#{supervisor_id},
+			#{worker_id},
+			#{supervisor_name},
+			#{worker_name},
+			#{report_contents},
+			#{report_note},
+			0,
+			#{app_id},
+			#{app_name},
+			#{app_total},
+			"S"
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_result_report set
+			report_name=#{report_name},
+			report_contents=#{report_contents},
+			report_note=#{report_note},
+			app_status=#{app_status},
+			app_turn=app_turn+1,
+			app_time=#{app_time}
+		where idx=#{idx}
+	</update>
+	
+
+	
+	<delete id="delete">
+		delete from tb_result_report where idx=#{idx}
+	</delete>	
+</mapper>

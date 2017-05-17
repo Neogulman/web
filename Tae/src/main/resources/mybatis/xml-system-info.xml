@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-system-info">
+
+	<select id="list" resultType="com.neogul.data.dto.TB_System_Info">
+		select 
+			sip,
+			disk_free,
+			disk_use,
+			disk_age,
+			cpu,
+			memory
+		 from tb_system_info
+		 where 1=1
+		 	<if test='sip != ""'>
+		 		and sip=#{sip}
+		 	</if>
+	</select>
+	
+	<insert id="insert">
+		insert into tb_system_info
+		(
+			sip,
+			disk_free,
+			disk_use,
+			disk_age,
+			cpu,
+			memory
+		)values(
+			#{sip},
+			#{disk_free},
+			#{disk_use},
+			#{disk_age},
+			#{cpu},
+			#{memory}
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_system_info set
+			disk_free=#{disk_free},
+			disk_use=#{disk_use},
+			disk_age=#{disk_age},
+		 	cpu=#{cpu},
+			memory=#{memory}
+		where sip=#{sip}
+	</update>
+	
+</mapper>

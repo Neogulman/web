@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-policy-group-log">
+
+	<select id="list" resultType="com.neogul.data.dto.TB_Policy_Group_Log">
+		select 
+			DATE_FORMAT(g.day, '%Y/%m/%d %H:%i') as day,
+			gr.grp_name,
+			g.item_no,
+			i.item_name,
+			g.event
+		 from tb_policy_group_log g, tb_policy_item i, tb_policy_group gr
+		 where 1=1
+		 	and g.item_no=i.item_no
+		 	and g.grp_gubun=gr.grp_gubun
+		 	and g.grp_key=gr.grp_key
+		 	and g.grp_gubun=#{grp_gubun}
+		 	and g.grp_key=#{grp_key}
+		 	
+		 order by g.day desc
+	</select>
+	
+	<insert id="insert">
+		insert into tb_policy_group_log
+		(
+			day,
+			grp_gubun,
+			grp_key,
+			item_no,
+			event
+		)values(
+			now(),
+			#{grp_gubun},
+			#{grp_key},
+			#{item_no},
+			#{event}
+		)
+	</insert>
+	
+	<delete id="delete">
+		delete from tb_policy_group_log where grp_gubun=#{grp_gubun} and grp_key=#{grp_key} and item_no=#{item_no} and event=#{event}
+	</delete>
+	
+	<delete id="update">
+		update tb_policy_group_log set event='I' where grp_gubun=#{grp_gubun} and grp_key=#{grp_key} and event='T'
+	</delete>
+	
+</mapper>
