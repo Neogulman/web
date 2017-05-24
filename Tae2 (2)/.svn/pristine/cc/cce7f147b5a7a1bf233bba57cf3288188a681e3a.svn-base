@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-fault-report">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_fault_report
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 		<if test='facility_type != ""'>
+		 		and facility_type=#{facility_type}
+		 	</if>
+		 	<if test='writer != ""'>
+		 		and writer=#{writer}
+		 	</if>
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>	
+	</select>
+
+	<select id="max" resultType="int">
+		select 
+			max(idx)
+		 from tb_fault_report
+		 where 1=1
+	</select>
+
+	<select id="list" resultType="com.neogul.data.dto.TB_Fault_Report">
+		select 
+			idx,
+			contract_name,
+			facility_type,
+			fault_key,
+			writer,
+			facility_name,
+			fault_record,
+			write_day,
+			s_day,
+			e_day,
+			recovery_day,
+			supervisor_id,
+			worker_id,
+			supervisor_name,
+			worker_name,
+			fault_cause,
+			result,
+			after_plan,
+			app_turn,
+			app_id,
+			app_name,
+			app_total,
+			app_status,
+			app_time
+		 from tb_fault_report
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	<if test='facility_type != ""'>
+		 		and facility_type=#{facility_type}
+		 	</if>
+		 	<if test='writer != ""'>
+		 		and writer=#{writer}
+		 	</if>
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>	
+		 order by idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	
+	
+	<insert id="insert">
+		insert into tb_fault_report
+		(
+			contract_name,
+			facility_type,
+			fault_key,
+			writer,
+			facility_name,
+			fault_record,
+			write_day,
+			s_day,
+			e_day,
+			recovery_day,
+			supervisor_id,
+			worker_id,
+			supervisor_name,
+			worker_name,
+			fault_cause,
+			result,
+			after_plan,
+			app_turn,
+			app_id,
+			app_name,
+			app_total,
+			app_status
+		)values(
+			#{contract_name},
+			#{facility_type},
+			#{fault_key},
+			#{writer},
+			#{facility_name},
+			#{fault_record},
+			now(),
+			#{s_day},
+			#{e_day},
+			#{recovery_day},
+			#{supervisor_id},
+			#{worker_id},
+			#{supervisor_name},
+			#{worker_name},
+			#{fault_cause},
+			#{result},
+			#{after_plan},
+			0,
+			#{app_id},
+			#{app_name},
+			#{app_total},
+			'S'	
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_fault_report set
+			facility_name=#{facility_name},
+			fault_record=#{fault_record},
+			fault_cause=#{fault_cause},
+			result=#{result},
+			after_plan=#{after_plan},
+			app_status=#{app_status},
+			app_turn=app_turn+1,
+			app_time=#{app_time}
+		where idx=#{idx}
+	</update>
+
+	<delete id="delete">
+		delete from tb_fault_report where idx=#{idx}
+	</delete>	
+</mapper>

@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<body>
+<vaadin-css-layout id="product-form" style-name="product-form-wrapper">
+    <vaadin-vertical-layout height-full spacing style-name="form-layout">
+    	<vaadin-horizontal-layout width-full spacing>
+        	<vaadin-text-field caption="barcode" _id="barcode" width-full />
+        	<vaadin-button style-name="primary" _id="modify" :BOTTOM>Modify</vaadin-button>
+        </vaadin-horizontal-layout>
+    	<vaadin-text-field caption="name" _id="name" width-full />
+    	<vaadin-text-field caption="price" _id="price" width-full />
+        <vaadin-text-field caption="locationX" _id="locationX" width-full />
+        <vaadin-text-field caption="locationY" _id="locationY" width-full />
+        <vaadin-text-field caption="stock" _id="stock" width-full />
+        <vaadin-text-field caption="salesvolume" _id="salesvolume" width-full />
+        <vaadin-text-field caption="brand" _id="brand" width-full />
+        <vaadin-horizontal-layout width-full spacing>
+        	<vaadin-combo-box caption="type" _id="type" width-full null-selection-allowed=false text-input-allowed=false />
+        	<vaadin-button style-name="danger" _id="block" :BOTTOM>Block</vaadin-button>
+        	<vaadin-button style-name="primary" _id="unblock" :BOTTOM>Unblock</vaadin-button>
+        </vaadin-horizontal-layout>
+        <vaadin-css-layout :expand style-name="expander" />
+        <vaadin-button style-name="primary" _id="add">Add</vaadin-button>
+        <vaadin-button style-name="primary" _id="save">Save</vaadin-button>
+        <vaadin-button style-name="cancel" _id="cancel" click-shortcut="escape">Cancel</vaadin-button>
+        <vaadin-button style-name="danger" _id="delete">Delete</vaadin-button>
+    </vaadin-vertical-layout>
+</vaadin-css-layout>
+</body>
+</html>

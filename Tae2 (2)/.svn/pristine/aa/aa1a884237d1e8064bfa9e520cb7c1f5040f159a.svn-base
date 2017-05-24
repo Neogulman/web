@@ -1,0 +1,52 @@
+package com.neogul.ui.view.agent;
+
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.neogul.data.dao.Device_Info_Dao;
+import com.neogul.data.dao.ProductRepository;
+import com.neogul.data.dto.Product;
+import com.neogul.data.dto.TB_Device_Info;
+import com.vaadin.data.util.BeanContainer;
+import com.vaadin.spring.annotation.UIScope;
+
+/**
+ * Basic Container implementation. Reads data from the database using spring data and
+ * keeps all the changes in memory after that.
+ *
+ * @author Vaadin Ltd
+ */
+@Component
+@UIScope
+@Transactional
+public class AgentContainerImpl extends BeanContainer<Integer, TB_Device_Info> implements AgentContainer {
+
+//    @Autowired
+//    private ProductRepository productRepository;
+	
+    @Autowired
+    private Device_Info_Dao Device_Info_Dao;
+    public AgentContainerImpl() throws IllegalArgumentException {
+        super(TB_Device_Info.class);
+        setBeanIdProperty("agent_id");
+    }
+    
+    @PostConstruct
+    public void init() {
+        List<TB_Device_Info> all = null;
+		try {
+			all = Device_Info_Dao.fnList(new TB_Device_Info());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(all != null){
+			addAll(all);
+		}
+    }
+}

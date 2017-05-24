@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-contract-manage">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_contract_manage
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='contract_name != ""'>
+		 		and contract_name=#{contract_name}
+		 	</if>
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>	
+	</select>
+	<select id="max" resultType="int">
+		select 
+			max(idx)
+		 from tb_contract_manage
+		where 1=1
+	</select>
+	<select id="list" resultType="com.neogul.data.dto.TB_Contract_Manage">
+		select 
+			idx,
+			contract_no,
+			contract_name,
+			contract_writer,
+			s_day,
+			e_day,
+			contract_admin,
+			contract_user,
+			contract_admin_name,
+			contract_user_name,
+			contract_contents,
+			status
+		 from tb_contract_manage
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='contract_name != ""'>
+		 		and contract_name=#{contract_name}
+		 	</if>
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>	
+		 order by idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_contract_manage
+		(
+			contract_no,
+			contract_name,
+			contract_writer,
+			s_day,
+			e_day,
+			contract_admin,
+			contract_user,
+			contract_admin_name,
+			contract_user_name,
+			contract_contents,
+			status
+		)values(
+			#{contract_no},
+			#{contract_name},
+			#{contract_writer},
+			#{s_day},
+			#{e_day},
+			#{contract_admin},
+			#{contract_user},
+			#{contract_admin_name},
+			#{contract_user_name},
+			#{contract_contents},
+			#{status}
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_contract_manage set
+			contract_no=#{contract_no},
+			contract_name=#{contract_name},
+			s_day=#{s_day},
+			e_day=#{e_day},
+			contract_admin=#{contract_admin},
+			contract_user=#{contract_user},
+			contract_admin_name=#{contract_admin_name},
+			contract_user_name=#{contract_user_name},
+			contract_contents=#{contract_contents},
+			status=#{status}
+		where idx=#{idx}
+	</update>
+
+	<delete id="delete">
+		delete from tb_contract_manage where idx=#{idx}
+	</delete>	
+</mapper>

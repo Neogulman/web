@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-code-info">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_code_info
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='type != ""'>
+		 		and type=#{type}
+		 	</if>
+	</select>
+	
+	
+	<select id="check" resultType="com.neogul.data.dto.TB_Code_Info">
+		select 
+			idx,
+			type,
+			name
+		 from 
+		 	tb_code_info
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='type != ""'>
+		 		and type=#{type}
+		 	</if>
+		 	
+		 	<if test='name != ""'>
+		 		and name=#{name}
+		 	</if>
+	</select>
+	
+	<select id="list" resultType="com.neogul.data.dto.TB_Code_Info">
+		select 
+			a.idx,
+			a.type,
+			case 
+				when a.type = "D" then '부서'
+				when a.type = "C" then '직책'
+			end as type_name,
+			a.name
+		 from 
+		 	tb_code_info a
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and a.idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='type != ""'>
+		 		and a.type=#{type}
+		 	</if>
+		 	
+		 	<if test='name != ""'>
+		 		and a.name like like CONCAT('%', #{name}, '%')
+		 	</if>
+		 	
+		 order by a.idx asc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_code_info
+		(
+			type,
+			name
+		)values(
+			#{type},
+			#{name}
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_code_info set
+			name=#{name}
+		where idx=#{idx}
+	</update>
+
+	<delete id="delete">
+		delete from tb_code_info where idx=#{idx}
+	</delete>	
+</mapper>

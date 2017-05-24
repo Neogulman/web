@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-operation-info">
+
+	<select id="check" resultType="com.neogul.data.dto.TB_Operation_Info">
+		select
+			work_key,
+			type,
+			ask_user_id,
+			ask_respons,
+			ask_day,
+			work_name,
+			DATE_FORMAT(s_day, '%Y-%m-%d %H:%i') as s_day,
+			DATE_FORMAT(e_day, '%Y-%m-%d %H:%i') as e_day,
+			agent_id
+		from tb_operation_info
+		where 1=1
+		 	
+		 	<if test='work_user_id != ""'>
+		 		and work_user_id=#{work_user_id}
+		 	</if>
+		 	
+			<if test='s_day != ""'>
+		 		and (DATE_FORMAT(#{s_day}, '%Y-%m-%d %H:%i') <![CDATA[ < ]]>  e_day  
+		 				and DATE_FORMAT(#{e_day}, '%Y-%m-%d %H:%i') <![CDATA[ > ]]> s_day  )
+		 	</if>
+		 	
+		 	<if test='work_key > 0'>
+		 		and work_key not in(${work_key})
+		 	</if>
+		 	
+		 	<if test='type != ""'>
+		 		and type=#{type}
+		 	</if>
+		 	
+		 	and payment_status not in('B')
+	</select>
+	
+	<!-- select id="max" resultType="int">
+		select
+			max(work_key) as max
+		 from tb_operation_info
+		SELECT LAST_INSERT_ID()
+	</select-->
+	
+	
+	
+	<select id="cnt" resultType="int">
+		select
+			count(*) as cnt
+		 from tb_operation_info w
+		 left outer join tb_user_info u on w.ask_user_id=u.user_id
+		 left outer join tb_user_info u2 on w.work_user_id=u2.user_id
+		 left outer join tb_user_info u3 on w.payment_user_id=u3.user_id
+		 left outer join tb_device_info v on w.agent_id=v.agent_id
+		 where 1=1 
+			<if test='type != ""'>
+		 		and w.type=#{type}
+		 	</if>
+		 	
+		 	<if test='work_key > 0'>
+		 		and w.work_key=#{work_key}
+		 	</if>
+		 	
+		 	<if test='ask_user_id != ""'>
+		 		and w.ask_user_id=#{ask_user_id}
+		 	</if>
+		 	
+		 	<if test='ask_user_name != ""'>
+		 		and (w.ask_user_id like CONCAT('%', #{ask_user_name}, '%') or u.user_name like CONCAT('%', #{ask_user_name}, '%'))
+		 	</if>
+		 	
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(w.s_day, '%Y-%m-%d') and DATE_FORMAT(w.e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(w.s_day, '%Y-%m-%d') and DATE_FORMAT(w.e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(w.s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(w.e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>		 	
+		 	
+		 	<if test='ask_user_dept != "" or ask_user_dept !="0"'>
+		 		<if test='payment_user_id != ""'>
+		 			and (u.user_dept=#{ask_user_dept} or w.payment_user_id=#{payment_user_id})
+		 		</if>
+		 	</if>
+		 	
+		 	<if test='payment_status != ""'>
+		 		and w.payment_status in(${payment_status})
+		 	</if>
+		 	
+
+		 	<if test='contract_idx_str != ""'>
+		 		and w.contract_idx in(${contract_idx_str})
+		 	</if>
+		 	
+		 	<if test='status != ""'>
+		 		and w.status=#{status}
+		 	</if>
+	</select>
+	
+	<select id="list" resultType="com.neogul.data.dto.TB_Operation_Info">
+		select
+			w.work_key,
+			w.type,
+			w.ask_user_id,
+			u.user_name as ask_user_name,
+			(select name from tb_code_info where type='D' and idx=u.user_dept) as ask_user_dept_name,
+			w.ask_respons,
+			DATE_FORMAT(w.ask_day, '%Y-%m-%d %H:%i:%S') as ask_day,
+			w.work_name,
+			DATE_FORMAT(w.s_day, '%Y-%m-%d %H:%i') as s_day,
+			DATE_FORMAT(w.e_day, '%Y-%m-%d %H:%i') as e_day,
+			w.agent_id,
+			v.nickname as agent_name,
+			v.pc_ip as agent_ip,
+			w.work_user_id,
+			u2.user_name as work_user_name,
+			w.server_group,
+			w.contract_idx,
+			w.command_group,
+			w.program_group,
+			w.program_type,
+			w.payment_user_id,
+			u3.user_name as payment_user_name,
+			w.payment_status,
+			w.payment_day,
+			w.payment_request,
+			w.policy_usb,
+			w.policy_1394,
+			w.policy_pcmcia,
+			w.policy_serial,
+			w.policy_bluetooth,
+			w.policy_parallel,
+			w.policy_irda,
+			w.policy_wibro,
+			w.policy_floppy,
+			w.policy_cdrom,
+			w.policy_lan,
+			w.policy_wireless,
+			w.policy_share_folder,			
+			w.policy_networkdisk_out,
+			w.policy_folder_permission,
+			w.policy_usb_cable,
+			w.policy_local_disk,
+			w.report,
+			w.status			
+		 from tb_operation_info w
+		 left outer join tb_user_info u on w.ask_user_id=u.user_id
+		 left outer join tb_user_info u2 on w.work_user_id=u2.user_id
+		 left outer join tb_user_info u3 on w.payment_user_id=u3.user_id
+		 left outer join tb_device_info v on w.agent_id=v.agent_id
+		 where 1=1
+			<if test='type != ""'>
+		 		and w.type=#{type}
+		 	</if>
+		 	
+		 	<if test='work_key > 0'>
+		 		and w.work_key=#{work_key}
+		 	</if>
+		 	
+		 	<if test='ask_user_id != ""'>
+		 		and w.ask_user_id=#{ask_user_id}
+		 	</if>
+		 	
+		 	<if test='ask_user_name != ""'>
+		 		and (w.ask_user_id like CONCAT('%', #{ask_user_name}, '%') or u.user_name like CONCAT('%', #{ask_user_name}, '%') or w.work_user_id like CONCAT('%', #{ask_user_name}, '%') or u2.user_name like CONCAT('%', #{ask_user_name}, '%'))
+		 	</if>
+		 
+		 	<if test='ask_day != ""'>
+		 		and DATE_FORMAT(w.ask_day, '%Y-%m-%d')=#{ask_day}
+		 	</if>		 	
+		 	
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(w.s_day, '%Y-%m-%d') and DATE_FORMAT(w.e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(w.s_day, '%Y-%m-%d') and DATE_FORMAT(w.e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(w.s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(w.e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>		 	
+
+		 	<if test='ask_user_dept != "" or ask_user_dept !="0"'>
+		 		<if test='payment_user_id != ""'>
+		 			and (u.user_dept=#{ask_user_dept} or w.payment_user_id=#{payment_user_id})
+		 		</if>
+		 	</if>
+
+		 	<if test='payment_status != ""'>
+		 		and w.payment_status in(${payment_status})
+		 	</if>
+		 	
+
+		 	
+		 	<if test='status != ""'>
+		 		and w.status=#{status}
+		 	</if>
+		 	
+		 	<if test='contract_idx_str != ""'>
+		 		and w.contract_idx in(${contract_idx_str})
+		 	</if>
+		 	
+		 order by w.work_key desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	
+	<select id="cnttimeline" resultType="int">
+		select
+			count(*) as cnt
+		 from tb_operation_info w
+		 left outer join tb_user_info u on w.ask_user_id=u.user_id
+		 left outer join tb_user_info u2 on w.work_user_id=u2.user_id
+		 left outer join tb_user_info u3 on w.payment_user_id=u3.user_id
+		 left outer join tb_device_info v on w.agent_id=v.agent_id
+		 where 1=1 and DateDiff(e_day, s_day) <![CDATA[ <  ]]> 7 
+			<if test='type != ""'>
+		 		and w.type=#{type}
+		 	</if>
+		 	
+		 	<if test='work_key > 0'>
+		 		and w.work_key=#{work_key}
+		 	</if>
+		 	
+		 	<if test='ask_user_id != ""'>
+		 		and w.ask_user_id=#{ask_user_id}
+		 	</if>
+		 	
+		 	<if test='ask_user_name != ""'>
+		 		and (w.ask_user_id like CONCAT('%', #{ask_user_name}, '%') or u.user_name like CONCAT('%', #{ask_user_name}, '%'))
+		 	</if>
+		 	
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(w.s_day, '%Y-%m-%d') and DATE_FORMAT(w.e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(w.s_day, '%Y-%m-%d') and DATE_FORMAT(w.e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(w.s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(w.e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>		 	
+		 	
+		 	<if test='ask_user_dept != "" or ask_user_dept !="0"'>
+		 		<if test='payment_user_id != ""'>
+		 			and (u.user_dept=#{ask_user_dept} or w.payment_user_id=#{payment_user_id})
+		 		</if>
+		 	</if>
+		 	
+		 	<if test='payment_status != ""'>
+		 		and w.payment_status in(${payment_status})
+		 	</if>
+		 	
+
+		 	<if test='contract_idx_str != ""'>
+		 		and w.contract_idx in(${contract_idx_str})
+		 	</if>
+		 	
+		 	<if test='status != ""'>
+		 		and w.status=#{status}
+		 	</if>
+	</select>
+		
+	<select id="timeline" resultType="com.neogul.data.dto.TB_Operation_Info">
+		select
+			w.work_key,
+			w.type,
+			w.ask_user_id,
+			u.user_name as ask_user_name,
+			(select name from tb_code_info where type='D' and idx=u.user_dept) as ask_user_dept_name,
+			w.ask_respons,
+			DATE_FORMAT(w.ask_day, '%Y-%m-%d %H:%i:%S') as ask_day,
+			w.work_name,
+			DATE_FORMAT(w.s_day, '%Y-%m-%d %H:%i') as s_day,
+			DATE_FORMAT(w.e_day, '%Y-%m-%d %H:%i') as e_day,
+			w.agent_id,
+			v.nickname as agent_name,
+			v.pc_ip as agent_ip,
+			w.work_user_id,
+			u2.user_name as work_user_name,
+			w.server_group,
+			w.contract_idx,
+			w.command_group,
+			w.program_group,
+			w.program_type,
+			w.payment_user_id,
+			u3.user_name as payment_user_name,
+			w.payment_status,
+			w.payment_day,
+			w.payment_request,
+			w.policy_usb,
+			w.policy_1394,
+			w.policy_pcmcia,
+			w.policy_serial,
+			w.policy_bluetooth,
+			w.policy_parallel,
+			w.policy_irda,
+			w.policy_wibro,
+			w.policy_floppy,
+			w.policy_cdrom,
+			w.policy_lan,
+			w.policy_wireless,
+			w.policy_share_folder,			
+			w.policy_networkdisk_out,
+			w.policy_folder_permission,
+			w.policy_usb_cable,
+			w.policy_local_disk,
+			w.report,
+			w.status			
+		 from tb_operation_info w
+		 left outer join tb_user_info u on w.ask_user_id=u.user_id
+		 left outer join tb_user_info u2 on w.work_user_id=u2.user_id
+		 left outer join tb_user_info u3 on w.payment_user_id=u3.user_id
+		 left outer join tb_device_info v on w.agent_id=v.agent_id
+		 where 1=1  and DateDiff(e_day, s_day) <![CDATA[ <  ]]> 7  
+			<if test='type != ""'>
+		 		and w.type=#{type}
+		 	</if>
+		 	
+		 	<if test='work_key > 0'>
+		 		and w.work_key=#{work_key}
+		 	</if>
+		 	
+		 	<if test='ask_user_id != ""'>
+		 		and w.ask_user_id=#{ask_user_id}
+		 	</if>
+		 	
+		 	<if test='ask_user_name != ""'>
+		 		and (w.ask_user_id like CONCAT('%', #{ask_user_name}, '%') or u.user_name like CONCAT('%', #{ask_user_name}, '%') or w.work_user_id like CONCAT('%', #{ask_user_name}, '%') or u2.user_name like CONCAT('%', #{ask_user_name}, '%'))
+		 	</if>
+		 
+		 	<if test='ask_day != ""'>
+		 		and DATE_FORMAT(w.ask_day, '%Y-%m-%d')=#{ask_day}
+		 	</if>		 	
+		 	
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(w.s_day, '%Y-%m-%d') and DATE_FORMAT(w.e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(w.s_day, '%Y-%m-%d') and DATE_FORMAT(w.e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(w.s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(w.e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>		 	
+
+		 	<if test='ask_user_dept != "" or ask_user_dept !="0"'>
+		 		<if test='payment_user_id != ""'>
+		 			and (u.user_dept=#{ask_user_dept} or w.payment_user_id=#{payment_user_id})
+		 		</if>
+		 	</if>
+
+		 	<if test='payment_status != ""'>
+		 		and w.payment_status in(${payment_status})
+		 	</if>
+		 	
+
+		 	
+		 	<if test='status != ""'>
+		 		and w.status=#{status}
+		 	</if>
+		 	
+		 	<if test='contract_idx_str != ""'>
+		 		and w.contract_idx in(${contract_idx_str})
+		 	</if>
+		 	
+		 order by w.work_key desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<select id="day-cnt" resultType="int">
+		select 
+			count(*) as dcnt
+		from tb_operation_info
+		where #{day} BETWEEN s_day AND e_day
+		<if test='work_user_id != ""'>
+		 	and	work_user_id=#{work_user_id}
+	</if> 
+		
+			
+ 	</select>
+ 	
+ 	<!--select id="day-cnt" resultType="int">
+		select 
+			count(*) as dcnt
+		from tb_operation_info
+		where DATE_FORMAT(ask_day, '%Y-%m-%d')=CURDATE()
+		<if test='work_user_id != ""'>
+		 	and	work_user_id=#{work_user_id}
+		</if> 
+		
+			
+ 	</select-->
+ 
+ 	<select id="month-cnt" resultType="int">
+		select 
+			count(*) as mcnt
+		from tb_operation_info
+		where 1=1
+			and #{day} BETWEEN substr(s_day, 1, 7) AND substr(e_day, 1, 7)
+			<if test='result != ""'>
+		 		and status=#{result}
+		 	</if>
+		 	<if test='work_user_id != ""'>
+		 		and work_user_id=#{work_user_id}
+		 	</if> 
+ 	</select>
+ 		
+	<insert id="insert" useGeneratedKeys="true" keyProperty="work_key">
+		insert into tb_operation_info
+		(
+			type,
+			contract_idx,
+			ask_user_id,
+			ask_respons,
+			ask_day,
+			work_name,
+			s_day,
+			e_day,
+			agent_id,
+			work_user_id,
+			payment_status,
+			payment_user_id,
+			server_group,
+			command_group,
+			program_group,
+			program_type,
+			policy_usb,
+			policy_1394,
+			policy_pcmcia,
+			policy_serial,
+			policy_bluetooth,
+			policy_parallel,
+			policy_irda,
+			policy_wibro,
+			policy_floppy,
+			policy_cdrom,
+			policy_lan,
+			policy_wireless,
+			policy_share_folder,			
+			policy_networkdisk_out,
+			policy_folder_permission,
+			policy_usb_cable,
+			policy_local_disk,
+			status
+		)values(
+			#{type},
+			#{contract_idx},
+			#{ask_user_id},
+			#{ask_respons},
+			now(),
+			#{work_name},
+			#{s_day},
+			#{e_day},
+			#{agent_id},
+			#{work_user_id},
+			'N',
+			#{payment_user_id},
+			#{server_group},
+			#{command_group},
+			#{program_group},
+			#{program_type},
+			#{policy_usb},
+			#{policy_1394},
+			#{policy_pcmcia},
+			#{policy_serial},
+			#{policy_bluetooth},
+			#{policy_parallel},
+			#{policy_irda},
+			#{policy_wibro},
+			#{policy_floppy},
+			#{policy_cdrom},
+			#{policy_lan},
+			#{policy_wireless},
+			#{policy_share_folder},			
+			#{policy_networkdisk_out},
+			#{policy_folder_permission},
+			#{policy_usb_cable},
+			#{policy_local_disk},
+			#{status}
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_operation_info set
+			work_name=#{work_name},
+			s_day=#{s_day},
+			e_day=#{e_day},
+			agent_id=#{agent_id},
+			work_user_id=#{work_user_id},
+			server_group=#{server_group},
+			command_group=#{command_group},
+			program_group=#{program_group},
+			payment_user_id=#{payment_user_id},
+			<if test='payment_status != ""'>
+				payment_status=#{payment_status},
+				payment_request=#{payment_request},
+				payment_day=now(),
+			</if>			
+			policy_usb=#{policy_usb},
+			policy_1394=#{policy_1394},
+			policy_pcmcia=#{policy_pcmcia},
+			policy_serial=#{policy_serial},
+			policy_bluetooth=#{policy_bluetooth},
+			policy_parallel=#{policy_parallel},
+			policy_irda=#{policy_irda},
+			policy_wibro=#{policy_wibro},
+			policy_floppy=#{policy_floppy},
+			policy_cdrom=#{policy_cdrom},
+			policy_lan=#{policy_lan},
+			policy_wireless=#{policy_wireless},
+			policy_share_folder=#{policy_share_folder},			
+			policy_networkdisk_out=#{policy_networkdisk_out},
+			policy_folder_permission=#{policy_folder_permission},
+			policy_usb_cable=#{policy_usb_cable},
+			policy_local_disk=#{policy_local_disk}
+		where work_key=#{work_key}
+	</update>
+	
+	<delete id="delete">
+		delete from tb_operation_info where work_key=#{work_key}
+	</delete>
+	
+	<update id="report">
+		update tb_operation_info set report=#{report} where work_key=#{work_key}
+	</update>
+	
+	<select id="selectOne" resultType="com.neogul.data.dto.TB_Operation_Info">
+		select * from tb_operation_info 
+		where 1=1
+			and type='I'
+			and work_user_id=#{work_user_id} 
+			and agent_id=#{agent_id}
+			and now() BETWEEN s_day AND e_day 
+			and payment_status='Y'
+		limit 1
+	</select>
+	
+	<select id="selectOutOne" resultType="com.neogul.data.dto.TB_Operation_Info">
+		select * from tb_operation_info 
+		where 1=1
+			and type='O'
+			and work_user_id=#{work_user_id} 
+			and agent_id=#{agent_id}
+		<![CDATA[	
+			and now() < e_day 
+			]]>
+			and payment_status='Y'
+		group by e_day
+		limit 1
+	</select>
+	
+	<select id="selectPolicyItem" resultType="String">
+		select i.item_command from tb_policy_group_item g, tb_policy_item i 
+		where 1=1
+			AND g.item_no=i.item_no AND g.grp_key in (${grp_key_str})
+	</select>
+	
+	<update id="updateStatus">
+		update tb_operation_info 
+		set status=#{status} 
+		where work_key=#{work_key}
+	</update>
+	<!-- v2.0 new -->
+	<select id="dwork-status" resultType="int">
+		select
+			count(*) as dwork_status 
+		from tb_operation_info
+		where #{day} BETWEEN DATE_FORMAT(s_day,'%Y-%m-%d') AND DATE_FORMAT(e_day,'%Y-%m-%d')
+		<if test='work_user_id != ""'>
+		 	and	work_user_id=#{work_user_id}
+		</if>
+		<if test='status != ""'>
+			and status=#{status}
+		</if>
+	</select>
+	
+	<select id="mwork-status" resultType="int">
+		select
+			count(*) as mwork_status 
+		from tb_operation_info
+		where #{day} BETWEEN substr(s_day, 1, 7) AND substr(e_day, 1, 7)
+		<if test='work_user_id != ""'>
+		 	and	work_user_id=#{work_user_id}
+		</if>
+		<if test='status != ""'>
+			and status=#{status}
+		</if>
+	</select>  
+</mapper>
