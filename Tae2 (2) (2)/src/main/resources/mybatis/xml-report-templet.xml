@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-report-templet">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_report_templet
+		 where 1=1
+	</select>
+
+	<select id="list" resultType="com.neogul.data.dto.TB_Report_Templet">
+		select 
+			idx,
+			title,
+			content
+		 from tb_report_templet
+		 where 1=1		
+		  
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 			 	
+		 order by idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_report_templet
+		(
+			title,
+			content
+		)values(
+			#{title},
+			#{content}
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_report_templet set
+			title=#{title},
+			content=#{content}
+		where idx=#{idx}
+	</update>
+	
+	<delete id="delete">
+		delete from tb_report_templet where idx=#{idx}
+	</delete>	
+</mapper>

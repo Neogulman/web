@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-security-board">
+	<select id="max" resultType="int">
+		SELECT LAST_INSERT_ID() 
+		from tb_security_board
+	</select>
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_security_board s
+			left outer join tb_user_info u on s.ask_user_id=u.user_id
+			left outer join tb_user_info u2 on s.app_id=u2.user_id
+		 where 1=1
+		<if test='idx > 0'>
+			and s.idx=#{idx}
+		</if>
+		<if test='title != ""'>
+			and s.title like CONCAT('%', #{title}, '%')
+		</if>
+		<if test='app_status != ""'>
+			and s.app_status=#{app_status}
+		</if>
+		
+		<if test='s_day != ""'>
+			and s.report_month=#{s_day}
+		</if>
+		<if test='user_level == 1'>
+			and u.user_dept=#{ask_user_dept}
+		</if>
+		<if test='user_level == 2 || user_level == 3'>
+		 	and u.user_dept=#{ask_user_dept} and (s.ask_user_id=#{ask_user_id} 
+		<if test='status != ""'>
+			and s.status=#{status}
+		</if>
+		<if test='status == ""'>
+		 	or s.status='Y'
+		 </if>)
+		</if>
+		<if test='status != ""'>
+		 	and s.status=#{status}
+		</if>
+		 	and s.status not in ('D')
+	</select>
+
+	<select id="list" resultType="com.neogul.data.dto.TB_Security_Board">
+		select 
+			s.idx,
+			s.title,
+			s.contents,
+			s.report_month,
+			s.org_file,
+			s.save_file,
+			s.rdate,
+			s.ask_user_id,
+			(select idx name from tb_code_info where type='D' and idx=u.user_dept) as ask_user_dept,
+			(select user_name from tb_user_info where user_id=s.ask_user_id) as ask_user_name,
+			s.app_id,
+			(select user_name from tb_user_info where user_id=s.app_id) as app_name,
+			s.app_status,
+			(select idx from tb_code_info where type='D' and idx=u2.user_dept) as app_dept,
+			s.app_date,
+			s.path,
+			s.status
+		 from tb_security_board s
+			left outer join tb_user_info u on s.ask_user_id=u.user_id
+			left outer join tb_user_info u2 on s.app_id=u2.user_id
+		 where 1=1
+		<if test='idx > 0'>
+			and s.idx=#{idx}
+		</if>
+		<if test='title != ""'>
+			and s.title like CONCAT('%', #{title}, '%')
+		</if>
+		<if test='app_status != ""'>
+			and s.app_status=#{app_status}
+		</if>
+		
+		<if test='s_day != ""'>
+			and s.report_month=#{s_day}
+		</if>
+		<if test='user_level == 1'>
+			and u.user_dept=#{ask_user_dept}
+		</if>
+		<if test='user_level == 2 || user_level == 3'>
+		 	and u.user_dept=#{ask_user_dept} and (s.ask_user_id=#{ask_user_id} 
+		<if test='status != ""'>
+			and s.status=#{status}
+		</if>
+		<if test='status == ""'>
+		 	or s.status='Y'
+		 </if>)
+		</if>
+		<if test='status != ""'>
+		 	and s.status=#{status}
+		</if>
+		 	and s.status not in ('D') 
+		 order by s.idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert" useGeneratedKeys="true" keyProperty="idx">
+		insert into tb_security_board
+		(
+			title,
+			contents,
+			report_month,
+			org_file,
+			save_file,
+			rdate,
+			ask_user_id,
+			app_status,
+			path,
+			status
+		)values(
+			#{title},
+			#{contents},
+			#{report_month},
+			#{org_file},
+			#{save_file},
+			now(),
+			#{ask_user_id},
+			'N',
+			#{path},
+			#{status}
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_security_board set
+			title=#{title},
+			report_month=#{report_month},
+			contents=#{contents},
+			status=#{status},
+			app_status=#{app_status}
+			<if test='app_status != "N"'>
+				, app_id=#{app_id}
+		 		, app_date=now()
+		 	</if>
+		where idx=#{idx}
+	</update>
+
+	<delete id="delete">
+		update tb_security_board set status=#{status} where idx=#{idx}
+	</delete>	
+</mapper>

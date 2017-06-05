@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-work-plan">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_work_plan
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	<if test='plan_type >0'>
+		 		and plan_type=#{plan_type}
+		 	</if>
+		 	<if test='plan_writer != ""'>
+		 		and plan_writer=#{plan_writer}
+		 	</if>
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>	
+	</select>
+
+	<select id="max" resultType="int">
+		select 
+			max(idx)
+		 from tb_work_plan
+		 where 1=1
+	</select>
+
+	<select id="list" resultType="com.neogul.data.dto.TB_Work_Plan">
+		select 
+			w.idx,
+			w.contract_name,
+			w.plan_type,
+			w.plan_key,
+			w.plan_writer,
+			w.plan_name,
+			w.write_day,
+			w.s_day,
+			w.e_day,
+			w.req_dept,
+			w.per_dept,
+			w.supervisor_id,
+			w.worker_id,
+			w.supervisor_name,
+			w.worker_name,
+			w.plan_contents,
+			w.plan_note,
+			w.app_turn,
+			w.app_id,
+			w.app_name,
+			w.app_total,
+			w.app_status,
+			w.app_time
+		 from tb_work_plan w
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	<if test='plan_type >0'>
+		 		and w.plan_type=#{plan_type}
+		 	</if>
+		 	<if test='plan_writer != ""'>
+		 		and plan_writer=#{plan_writer}
+		 	</if>
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>	
+		 order by idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<select id="printlist" resultType="com.neogul.data.dto.TB_Work_Plan">
+		select 
+			w.idx,
+			w.contract_name,
+			(select contract_name from tb_contract_manage where idx=w.contract_name) as contract_name_name,
+			w.plan_type,
+			(select type from tb_type_seq where idx=w.plan_type) as plan_type_name,
+			w.plan_key,
+			w.plan_writer,
+			w.plan_name,
+			w.write_day,
+			w.s_day,
+			w.e_day,
+			w.req_dept,
+			w.per_dept,
+			w.supervisor_id,
+			w.worker_id,
+			w.supervisor_name,
+			w.worker_name,
+			w.plan_contents,
+			w.plan_note,
+			w.app_turn,
+			w.app_id,
+			w.app_name,
+			w.app_total,
+			w.app_status,
+			w.app_time
+		 from tb_work_plan w
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='plan_writer != ""'>
+		 		and plan_writer=#{plan_writer}
+		 	</if>
+		 	<if test='s_day != ""'>
+ 			   	and (#{s_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d') 
+ 			   		or #{e_day} BETWEEN DATE_FORMAT(s_day, '%Y-%m-%d') and DATE_FORMAT(e_day, '%Y-%m-%d')
+ 			   		or DATE_FORMAT(s_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 					or DATE_FORMAT(e_day, '%Y-%m-%d') BETWEEN #{s_day} and #{e_day}
+ 				)
+		 	</if>	
+		 order by idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+
+	<insert id="insert">
+		insert into tb_work_plan
+		(
+			contract_name,
+			plan_type,
+			plan_key,
+			plan_writer,
+			plan_name,
+			write_day,
+			s_day,
+			e_day,
+			req_dept,
+			per_dept,
+			supervisor_id,
+			worker_id,
+			supervisor_name,
+			worker_name,
+			plan_contents,
+			plan_note,
+			app_turn,
+			app_id,
+			app_name,
+			app_total,
+			app_status
+		)values(
+			#{contract_name},
+			#{plan_type},
+			#{plan_key},
+			#{plan_writer},
+			#{plan_name},
+			now(),
+			#{s_day},
+			#{e_day},
+			#{req_dept},
+			#{per_dept},
+			#{supervisor_id},
+			#{worker_id},
+			#{supervisor_name},
+			#{worker_name},
+			#{plan_contents},
+			#{plan_note},
+			0,
+			#{app_id},
+			#{app_name},
+			#{app_total},
+			'S'	
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_work_plan set
+			plan_name=#{plan_name},
+			plan_contents=#{plan_contents},
+			plan_note=#{plan_note},
+			app_status=#{app_status},
+			app_turn=app_turn+1,
+			app_time=#{app_time}
+		where idx=#{idx}
+	</update>
+
+	<delete id="delete">
+		delete from tb_work_plan where idx=#{idx}
+	</delete>	
+</mapper>

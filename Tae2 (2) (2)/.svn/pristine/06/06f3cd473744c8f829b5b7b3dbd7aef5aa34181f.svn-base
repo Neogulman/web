@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-report-information-inout">
+	<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_report_information_inout
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	<if test='s_day != ""'>
+		 		and (input_day BETWEEN '${s_day}' and '${e_day} 23:59:59' or output_day BETWEEN '${s_day} 00:00:00' and '${e_day} 23:59:59')
+		 	</if>
+		 	
+	</select>
+
+	<select id="list" resultType="com.neogul.data.dto.TB_Report_InformationInOut">
+		select 
+			idx,
+			equipment,
+			serial_number,
+			user,
+			contents,
+			input_day,
+			input_time,
+			output_day,
+			output_time
+		 from tb_report_information_inout
+		 where 1=1
+		 
+		 	<if test='idx > 0'>
+		 		and idx=#{idx}
+		 	</if>
+		 	
+		 	
+		 	<if test='s_day != ""'>
+		 	<![CDATA[
+		 		and (input_day <= '${e_day} 23:59:59' and output_day >= '${s_day} 00:00:00'  )
+		 		]]>
+		 	</if>
+		 	
+		 	
+		 order by idx desc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<insert id="insert">
+		insert into tb_report_information_inout
+		(
+			equipment,
+			serial_number,
+			user,
+			contents,
+			input_day,
+			input_time,
+			output_day,
+			output_time
+		)values(
+			#{equipment},
+			#{serial_number},
+			#{user},
+			#{contents},
+			#{input_day},
+			#{input_time},
+			#{output_day},
+			#{output_time}
+		)
+	</insert>
+	
+	<update id="update">
+		update tb_report_information_inout set
+			equipment=#{equipment},
+			serial_number=#{serial_number},
+			user=#{user},
+			contents=#{contents},
+			input_day=#{input_day},
+			input_time=#{input_time},
+			output_day=#{output_day},
+			output_time=#{output_time}
+		where idx=#{idx}
+	</update>
+
+	<delete id="delete">
+		delete from tb_report_information_inout where idx=#{idx}
+	</delete>	
+</mapper>

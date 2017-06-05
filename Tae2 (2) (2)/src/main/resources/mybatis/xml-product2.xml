@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-product2">
+	<!--<select id="cnt" resultType="int">
+		select 
+			count(*) as cnt
+		 from tb_product
+		 where 1=1
+		 	
+		 	<if test='status != ""'>
+		 		and status in (${status})
+		 	</if>
+	</select>-->
+	
+
+	<select id="list" resultType="com.neogul.data.dto.TB_Product">
+		select 
+			barcode,
+			name,
+			locationX,
+			locationY,
+			stock,
+			salesvolume,
+			type,
+			brand,
+			price
+		 from tb_product
+		 where 1=1
+		 	
+		 	<!--  <if test='status != ""'>
+		 		and type in (${type})
+		 	</if>-->
+		 	
+		 order by type desc
+		 <!-- limit #{sRow}, #{eRow}-->
+	</select>
+	
+	
+
+	
+	<!--  <update id="update">
+		update tb_product set
+			user_id=#{user_id},
+			pc_mac=#{pc_mac},
+			pc_ip=#{pc_ip},
+			connect_day=now(), 
+			status=#{status}
+		where barcode=#{barcode}
+	</update>-->
+	
+	
+	<update id="update-nick">
+		update tb_product set
+			name=#{name}
+		where barcode=#{barcode}
+	</update>
+	
+	<!--<update id="updateStatusAll">
+		update tb_product set status='Y' where status='S'
+	</update>-->
+	
+	<insert id="insert">
+		insert into tb_product
+		(
+			barcode,
+			name,
+			locationX,
+			locationY,
+			stock,
+			salesvolume,
+			type,
+			brand,
+			price
+		)
+		values 
+		(
+			#{barcode},
+			#{name},
+			#{locationX},
+			#{locationY},
+			#{stock},
+			#{salesvolume}, 
+			#{type},
+		    #{brand},
+		    #{price}
+		 )
+	</insert>
+
+	<delete id="delete">
+		delete from tb_product where barcode=#{barcode}
+	</delete>
+	
+
+</mapper>

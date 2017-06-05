@@ -1,0 +1,20 @@
+package com.neogul;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
+
+import com.neogul.conf.DataConfig;
+import com.neogul.conf.WebConfig;
+
+@SpringBootApplication
+@Import({
+	DataConfig.class,
+	WebConfig.class
+})
+public class JtopsRenewalApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(JtopsRenewalApplication.class, args);
+	}
+}

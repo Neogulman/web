@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xml-operation-log">
+
+	<select id="cnt" resultType="int">
+		select
+			count(*) as cnt
+		 from tb_operation_log <if test="partition != null"> partition(${partition})</if> l
+		 left outer join tb_device_info d on l.agent_id=d.agent_id
+		 left outer join tb_operation_info w on l.work_key=w.work_key
+		 left outer join tb_user_info u on l.user_id=u.user_id
+		 left outer join tb_user_info wu on w.ask_user_id=wu.user_id
+		 where 1=1
+		 	
+		 	<if test='s_day != ""'>
+		 		and l.day BETWEEN CONCAT( #{s_day}, ' 00:00:00') AND CONCAT( #{e_day}, ' 23:59:59')
+		 	</if>
+		 	
+		 	<if test='work_key > 0'>
+		 		and l.work_key=#{work_key}
+		 	</if>
+
+		 	<if test='agent_id != ""'>
+		 		and l.agent_id=#{agent_id}
+		 	</if>
+		 	
+		 	<if test='type != ""'>
+		 		and l.type=#{type}
+		 	</if>
+		 	
+		 	<if test='result != ""'>
+		 		and l.result=#{result}
+		 	</if>
+		 	
+		 	<if test='ask_user_id != ""'>
+		 		and w.ask_user_id=#{ask_user_id}
+		 	</if>
+		 	
+		 	<if test='ask_user_dept > 0'>
+		 		and wu.user_dept=#{ask_user_dept}
+		 	</if>
+		 	
+		 	<if test='user_id != ""'>
+		 		and (l.user_id like CONCAT('%', #{user_id}, '%') or u.user_name like CONCAT('%', #{user_id}, '%'))
+		 	</if>
+		 	
+		 	<if test='contract_idx_str != ""'>
+		 		and w.contract_idx in(${contract_idx_str})
+		 	</if>
+		 	<if test='remote_ip != ""'>
+		 		and l.remote_ip=#{remote_ip}
+		 	</if>
+	</select>
+
+	<select id="list" resultType="com.neogul.data.dto.TB_Operation_Log">
+		select
+			l.agent_id,
+			d.nickname as agent_name,
+			l.work_key,
+			w.work_name,
+			l.user_id,
+			u.user_name,
+			DATE_FORMAT(l.day, '%Y/%m/%d %H:%i:%S') as day,
+			l.type,
+			case 
+				when l.type = "3" then '프로그램 통제'
+				when l.type = "6" then '명령어 통제'
+				when l.type = "2" then 'IP 통제'
+				when l.type = "5" then '매체 통제'
+				when l.type = "1" then '사용자 인증'
+			end as type_name,
+			l.remote_ip,
+			l.event_day,
+			(select file from tb_operation_movie where work_key=w.work_key and l.event_day BETWEEN s_day and e_day limit 0, 1) as movie_file,
+			l.result,
+			case 
+				when l.result = "0" then '차단'
+				when l.result = "1" then '허용  '
+				when l.result = "2" then '읽기 전용 '
+			end as result_name,
+			l.event
+		 from tb_operation_log <if test="partition != null"> partition(${partition})</if> l
+		 left outer join tb_device_info d on l.agent_id=d.agent_id
+		 left outer join tb_operation_info w on l.work_key=w.work_key
+		 left outer join tb_user_info u on l.user_id=u.user_id
+		 left outer join tb_user_info wu on w.ask_user_id=wu.user_id
+		 where 1=1
+		 	
+		 	<if test='s_day != ""'>
+		 		and l.day BETWEEN CONCAT( #{s_day}, ' 00:00:00') AND CONCAT( #{e_day}, ' 23:59:59')
+		 	</if>
+		 	
+		 	<if test='work_key > 0'>
+		 		and l.work_key=#{work_key}
+		 	</if>
+
+		 	<if test='agent_id != ""'>
+		 		and l.agent_id=#{agent_id}
+		 	</if>
+		 	
+		 	<if test='type != ""'>
+		 		and l.type=#{type}
+		 	</if>
+		 	
+		 	<if test='result != ""'>
+		 		and l.result=#{result}
+		 	</if>
+			
+			<if test='ask_user_id != ""'>
+		 		and w.ask_user_id=#{ask_user_id}
+		 	</if>
+		 	
+		 	<if test='ask_user_dept > 0'>
+		 		and wu.user_dept=#{ask_user_dept}
+		 	</if>
+		 	
+		 	<if test='contract_idx_str != ""'>
+		 		and w.contract_idx in(${contract_idx_str})
+		 	</if>
+		 	
+		 	<if test='user_id != ""'>
+		 		and (l.user_id like CONCAT('%', #{user_id}, '%') or u.user_name like CONCAT('%', #{user_id}, '%'))
+		 	</if>
+		 	<if test='remote_ip != ""'>
+		 		and l.remote_ip=#{remote_ip}
+		 	</if>
+		 order by day desc
+		 limit #{sRow}, #{eRow}
+	</select>
+
+	<select id="movie-list" resultType="com.neogul.data.dto.TB_Operation_Log">
+		select
+			file as movie_file
+		 from tb_operation_movie
+		 where work_key = #{work_key}
+		 <if test='s_day != ""'>
+		 		and #{s_day} >= s_day
+		 	</if>
+		 order by day asc
+	</select>
+	
+	<select id="not-list" resultType="com.neogul.data.dto.TB_Operation_Log">
+		select
+			count(*) as cnt,
+			l.type,
+			l.event,
+			l.user_id,
+			(select user_name from tb_user_info where user_id=l.user_id) as user_name,
+			<if test='type == "6"'>
+		 		substring_index(event, '(', 1) as event_view
+		 	</if>
+		 	<if test='type == "2"'>
+		 		substring_index(event, ':', 1) as event_view
+		 	</if>
+		 	<if test='type == "3"'>
+		 		substring_index(event, '/', -1) as event_view
+		 	</if> 
+			
+		 from tb_operation_log l
+		 where 1=1
+
+		 <if test='type == "2"'>
+		 	and substring_index(event, ':', 1) not in(select item_command from tb_policy_item where gubun in('${gubun}', 'D${gubun}'))
+		 </if>
+		 
+		 <if test='user_id != ""'>
+		 	and (l.user_id like '%${user_id}%' or l.user_id=(select user_id from tb_user_info where user_name like '%${user_id}%')) 
+		 </if>
+		 <if test='s_day != ""'>
+		 	and l.day BETWEEN '${s_day} 00:00:00' AND '${e_day} 23:59:59'
+		 </if>
+		 <if test='event != ""'>
+		 	and l.event like '%${event}%'
+		 </if>
+		 	and l.type=#{type}
+		 	and l.result=#{result}
+		 group by event_view,user_id
+		 order by event asc
+		 limit #{sRow}, #{eRow}
+	</select>
+	
+	<select id="report" resultType="com.neogul.data.dto.TB_Operation_Log">
+		select 
+ 			type,
+ 			count(*) as wcnt
+		from tb_operation_log <if test="partition != null"> partition(${partition})</if>
+		where 
+  			day BETWEEN '${s_day} 00:00:00' AND '${e_day} 23:59:59'
+ 			and result=#{result}
+ 			<if test='work_user_id != ""'>
+		 		and user_id=#{work_user_id}
+		 	</if> 
+ 		group by type
+ 	</select>
+ 
+	<insert id="insert">
+		insert into tb_operation_log
+		(
+			agent_id,
+			work_key,
+			user_id,
+			day,
+			type,
+			remote_ip,
+			event,
+			result			
+		)values(
+			#{agent_id},
+			#{work_key},
+			#{user_id},
+			now(),
+			#{type},
+			#{remote_ip},
+			#{event},
+			#{result}		
+		)
+	</insert>
+	
+	<insert id="insertLogs" parameterType="com.neogul.data.dto.TB_Operation_Log" useGeneratedKeys="false" >
+		insert into tb_operation_log
+		(
+			agent_id,
+			work_key,
+			user_id,
+			day,
+			type,
+			remote_ip,
+			event_day,
+			event,
+			result,
+			inout_type			
+		)
+		values
+		<foreach collection="list" item="log" separator=","> 
+		(
+			#{log.agent_id},
+			#{log.work_key},
+			#{log.user_id},
+			now(),
+			#{log.type},
+			#{log.remote_ip},
+			#{log.event_day},
+			#{log.event},
+			#{log.result},
+			#{log.inout_type}		
+		)
+		</foreach>
+	</insert>
+</mapper>
